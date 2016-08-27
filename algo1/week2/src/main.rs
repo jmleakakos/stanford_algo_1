@@ -1,6 +1,9 @@
 use std::fs::File;
 use std::io::Read;
 use std::usize;
+ 
+static mut COMPARISON_COUNT : usize = 0;
+static mut COMPARISON_COUNT_REAL : usize = 0;
 
 fn get_data() -> Vec<i32>{
     let mut f = File::open("./quicksort.txt").unwrap();
@@ -25,7 +28,31 @@ fn quicksort(array : &mut Vec<i32>, start : usize, end : usize) {
         return
     } else {
         //println!("PIVOT ELEMENT: {}", array[start]);
+        // When using the start as the pivot always, no need to do anything special
+
+        // When using the end as the pivot always
+        //array.swap(start, end);
+
+        // When using the 'median-of-three'; find median of first, last, and middle of the array
+        // use kth when 2k (even)
+        // Divide by 2, then take the ceiling to get the middle
+        //let middle_index = ((start + ((end - start)/2)) as f32).ceil() as usize;
+        //let first = array[start];
+        //let middle = array[middle_index];
+        //let last = array[end];
+        //let mut all_three = vec![(first, start), (middle, middle_index), (last, end)];
+        //all_three.sort_by_key(|t| t.0);
+        //let (_, median_index) = all_three[1];
+        //array.swap(median_index, start);
+        
+
+
+
         let pivot_index = partition(array, start, end);
+
+
+
+
         //println!("PIVOT INDEX: {}", pivot_index);
 
         let new_left_start;
@@ -66,18 +93,27 @@ fn quicksort(array : &mut Vec<i32>, start : usize, end : usize) {
         //println!("");
 
         quicksort(array, new_left_start, new_left_end);
+        unsafe {
+            let array_length = new_left_end - new_left_start + 1;
+            COMPARISON_COUNT = COMPARISON_COUNT + array_length - 1;
+        }
+
         quicksort(array, new_right_start, new_right_end);
+        unsafe {
+            let array_length = new_right_end - new_right_start + 1;
+            COMPARISON_COUNT = COMPARISON_COUNT + array_length - 1;
+        }
     }
 }
 
 fn partition(array : &mut Vec<i32>, l : usize, r : usize) -> usize {
-    if l == 0 && r == 2 {
-        //println!("{:?}", &array[l..r]);
-    }
     let p = array[l];
     let mut i = l + 1;
     for j in (l+1)..(r+1) {
         //println!("I: {}, J: {}, {:?}", i, j, &array[l..r]);
+        unsafe {
+            COMPARISON_COUNT_REAL = COMPARISON_COUNT_REAL + 1;
+        }
         if array[j] < p {
             array.swap(j, i);
             //println!("AFTER SWAP: {:?}", &array[l..r]);
@@ -95,8 +131,19 @@ fn main() {
     let length = a.len();
     let mut array = a;
     quicksort(&mut array, 0, length-1);
-    for v in array {
+    for v in &array {
         println!("{}", v);
+    }
+    let mut pre_sorted = Vec::new();
+    for x in 1..10001 {
+        pre_sorted.push(x);
+    }
+    assert!(array == pre_sorted);
+    unsafe {
+        println!("CC: {}", COMPARISON_COUNT);
+    }
+    unsafe {
+        println!("CCR: {}", COMPARISON_COUNT_REAL);
     }
 }
 
