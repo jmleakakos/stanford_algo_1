@@ -24,6 +24,9 @@ fn get_data() -> Vec<i32>{
 
 fn quicksort(array : &mut Vec<i32>, start : usize, end : usize) {
     //println!("START: {}, END: {}", start, end);
+    unsafe {
+        COMPARISON_COUNT = COMPARISON_COUNT + (end - start);
+    }
     if end-start == 0 {
         return
     } else {
@@ -31,7 +34,7 @@ fn quicksort(array : &mut Vec<i32>, start : usize, end : usize) {
         // When using the start as the pivot always, no need to do anything special
 
         // When using the end as the pivot always
-        //array.swap(start, end);
+        array.swap(start, end);
 
         // When using the 'median-of-three'; find median of first, last, and middle of the array
         // use kth when 2k (even)
@@ -93,16 +96,7 @@ fn quicksort(array : &mut Vec<i32>, start : usize, end : usize) {
         //println!("");
 
         quicksort(array, new_left_start, new_left_end);
-        unsafe {
-            let array_length = new_left_end - new_left_start + 1;
-            COMPARISON_COUNT = COMPARISON_COUNT + array_length - 1;
-        }
-
         quicksort(array, new_right_start, new_right_end);
-        unsafe {
-            let array_length = new_right_end - new_right_start + 1;
-            COMPARISON_COUNT = COMPARISON_COUNT + array_length - 1;
-        }
     }
 }
 
